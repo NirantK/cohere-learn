@@ -32,7 +32,7 @@ class CohereBase:
         return examples
 
     @staticmethod
-    def parse_cohere_classification(
+    def parse_classification(
         classification: cohere.classify.Classification,
     ) -> Tuple[str, float]:
         """
@@ -53,7 +53,7 @@ class CohereBase:
         return lbl, score
 
     @staticmethod
-    def parse_cohere_response(
+    def parse_response(
         response: cohere.classify.Classifications,
     ) -> Tuple[List[str], List[float]]:
         """
@@ -67,7 +67,7 @@ class CohereBase:
         """
         lbls, scores = [], []
         for classification in response.classifications:
-            lbl, score = CohereBase.parse_cohere_classification(classification)
+            lbl, score = CohereBase.parse_classification(classification)
             lbls.append(lbl)
             scores.append(score)
         return lbls, scores
