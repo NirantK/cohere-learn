@@ -26,8 +26,8 @@ class CohereBase:
         """
         examples = []
         for row in df.iterrows():
-            text = row[1]["Name"]
-            lbl = row[1]["Key"]
+            text = row[1][self.x_label]
+            lbl = row[1][self.y_label]
             examples.append(Example(text, lbl))
         return examples
 
@@ -125,6 +125,13 @@ class CohereFewShotClassify(CohereBase):
     def __repr__(self) -> str:
         return f"CohereFewShotClassify({super().__repr__()})"
 
+    @staticmethod
+    def _compare(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+        # Get all diferent values
+        df3 = pd.merge(df1, df2, how="outer", indicator="Exist")
+        df3 = df3.loc[df3["Exist"] != "both"]
+        return df3
+
     def make_train_dataframes(
         self, train_counts: List[int], test_count: int, labels: List[str]
     ) -> Tuple[List[pd.DataFrame], pd.DataFrame]:
@@ -148,13 +155,20 @@ class CohereFewShotClassify(CohereBase):
             test_lbl_cuts = []
             for lbl in labels:
                 class_cut = self.df[self.df[self.y_label] == lbl]
-                if len(class_cut) <= test_count:
-                    raise ValueError(f"For label {lbl} insufficient number of samples")
+                if len(class_cut) < n + test_count:
+                    raise ValueError(
+                        f"Label {lbl} has only {len(class_cut)} samples, need {n + test_count}"
+                    )
+                print(f"Label: {lbl}, Class Cut has {len(class_cut)} samples")
                 test_cut = class_cut.sample(test_count, random_state=self.random_state)
+                print(f"Label: {lbl}, Test Cut has {len(test_cut)} samples")
                 test_lbl_cuts.append(test_cut)
-                left_over = class_cut[
-                    ~class_cut.apply(tuple, 1).isin(test_cut.apply(tuple, 1))
-                ]
+                left_over = CohereFewShotClassify._compare(test_cut, class_cut)
+                print(f"Label: {lbl}, Left Over has {len(left_over)} samples")
+                if len(left_over) < n:
+                    raise ValueError(
+                        f"For label '{lbl}' insufficient number of training samples left: {len(left_over)} <= {n}"
+                    )
                 trn.append(left_over.sample(n, random_state=self.random_state))
             train_dfs.append(pd.concat(trn))
         test_df = pd.concat(test_lbl_cuts)
