@@ -15,42 +15,10 @@ from tqdm.notebook import tqdm
 Path.ls = lambda x: list(x.iterdir())  # type: ignore
 
 
-class CohereBase:
+class CohereResponse:
     """
-    Base Utils for the Cohere API
+    Utils for working with the Cohere Response
     """
-
-    def make_examples(self, df: pd.DataFrame) -> List[Example]:
-        """
-        #TODO: Iterative and slow, make this parallel and fast
-        """
-        examples = []
-        for row in df.iterrows():
-            text = row[1][self.x_label]
-            lbl = row[1][self.y_label]
-            examples.append(Example(text, lbl))
-        return examples
-
-    @staticmethod
-    def parse_classification(
-        classification: cohere.classify.Classification,
-    ) -> Tuple[str, float]:
-        """
-        Parse a single classification from Cohere Response into a tuple of (label, score)
-
-        Args:
-            classification (cohere.classify.Classification): Single classification object
-
-        Returns:
-            Tuple[str, float]: lbl, score for a single classification
-        """
-        lbl = classification.prediction
-        confidences = classification.confidence
-        score = -1
-        for confidence in confidences:
-            score = max(score, confidence.confidence)
-            # why is this max? lazy hack since there is no prediction confidence score in the response
-        return lbl, score
 
     @staticmethod
     def parse_response(
@@ -65,18 +33,17 @@ class CohereBase:
         Returns:
             Tuple[List[str], List[float]]: _description_
         """
-        lbls, scores = [], []
+        labels = []
+        scores = []
         for classification in response.classifications:
-            lbl, score = CohereBase.parse_classification(classification)
-            lbls.append(lbl)
+            lbl = classification.prediction
+            score = classification.labels[classification.prediction].confidence
+            labels.append(lbl)
             scores.append(score)
-        return lbls, scores
-
-    def __repr__(self) -> str:
-        return f"Train Counts: {self.train_counts}, Test Count: {self.test_count}, Text Column(x_label): {self.x_label}, Target Column(y_label): {self.y_label}"
+        return labels, scores
 
 
-class FewShotClassify(CohereBase):
+class FewShotClassify(CohereResponse):
     """
     Data Management for Few Shot Classification using the Cohere API
 
@@ -118,12 +85,12 @@ class FewShotClassify(CohereBase):
         self.cohere_client = cohere_client
         self.labels = list(self.df[y_label].unique())
         self.random_state = 37
-        self.train_dfs, self.test_df = self.make_train_dataframes(
+        self.train_dfs, self.test_df = self.train_test_split(
             self.train_counts, self.test_count, self.labels
         )
 
     def __repr__(self) -> str:
-        return f"CohereFewShotClassify({super().__repr__()})"
+        return f"FewShotClassify(Train Counts: {self.train_counts}, Test Count: {self.test_count}, Text Column(x_label): {self.x_label}, Target Column(y_label): {self.y_label})"
 
     @staticmethod
     def _compare(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -132,7 +99,7 @@ class FewShotClassify(CohereBase):
         df3 = df3.loc[df3["Exist"] != "both"]
         return df3
 
-    def make_train_dataframes(
+    def train_test_split(
         self, train_counts: List[int], test_count: int, labels: List[str]
     ) -> Tuple[List[pd.DataFrame], pd.DataFrame]:
         """
@@ -173,6 +140,17 @@ class FewShotClassify(CohereBase):
             train_dfs.append(pd.concat(trn))
         test_df = pd.concat(test_lbl_cuts)
         return train_dfs, test_df
+
+    def make_examples(self, df: pd.DataFrame) -> List[Example]:
+        """
+        #TODO: Iterative and slow, make this parallel and fast
+        """
+        examples = []
+        for row in df.iterrows():
+            text = row[1][self.x_label]
+            lbl = row[1][self.y_label]
+            examples.append(Example(text, lbl))
+        return examples
 
     def predict(self) -> List[cohere.classify.Classifications]:
         """
