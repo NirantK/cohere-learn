@@ -5,7 +5,7 @@ import cohere
 import pandas as pd
 import pytest
 
-from .classify import CohereFewShotClassify
+from .classify import FewShotClassify
 
 
 @pytest.fixture
@@ -81,7 +81,7 @@ def test_makes_train_dataframes_raise_errors(error_df, cohere_client):
     train_counts = [2, 4]
     test_count = 2
     with pytest.raises(ValueError):
-        CohereFewShotClassify(
+        FewShotClassify(
             error_df,
             cohere_client,
             train_counts,
@@ -94,7 +94,7 @@ def test_makes_train_dataframes_raise_errors(error_df, cohere_client):
 def test_makes_train_dataframes(df, cohere_client):
     train_counts = [2, 4]
     test_count = 2
-    cfc = CohereFewShotClassify(
+    cfc = FewShotClassify(
         df,
         cohere_client,
         train_counts,

@@ -76,7 +76,7 @@ class CohereBase:
         return f"Train Counts: {self.train_counts}, Test Count: {self.test_count}, Text Column(x_label): {self.x_label}, Target Column(y_label): {self.y_label}"
 
 
-class CohereFewShotClassify(CohereBase):
+class FewShotClassify(CohereBase):
     """
     Data Management for Few Shot Classification using the Cohere API
 
@@ -159,12 +159,12 @@ class CohereFewShotClassify(CohereBase):
                     raise ValueError(
                         f"Label {lbl} has only {len(class_cut)} samples, need {n + test_count}"
                     )
-                print(f"Label: {lbl}, Class Cut has {len(class_cut)} samples")
+                # print(f"Label: {lbl}, Class Cut has {len(class_cut)} samples")
                 test_cut = class_cut.sample(test_count, random_state=self.random_state)
-                print(f"Label: {lbl}, Test Cut has {len(test_cut)} samples")
+                # print(f"Label: {lbl}, Test Cut has {len(test_cut)} samples")
                 test_lbl_cuts.append(test_cut)
-                left_over = CohereFewShotClassify._compare(test_cut, class_cut)
-                print(f"Label: {lbl}, Left Over has {len(left_over)} samples")
+                left_over = FewShotClassify._compare(test_cut, class_cut)
+                # print(f"Label: {lbl}, Left Over has {len(left_over)} samples")
                 if len(left_over) < n:
                     raise ValueError(
                         f"For label '{lbl}' insufficient number of training samples left: {len(left_over)} <= {n}"
