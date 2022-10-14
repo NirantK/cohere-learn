@@ -188,18 +188,3 @@ class CohereFewShotClassify(CohereBase):
             response = self.cohere_client.classify(inputs=inputs, examples=examples)
         responses.append(response)
         return responses
-
-
-# cohere_clf = CohereFewShotClassify(
-#     df=df,
-#     co=co,
-#     train_counts=[4, 8, 16, 32],
-#     test_count=64,
-#     x_label="Name",
-#     y_label="Key",
-# )
-
-# cohere_clf.predict()
-# assert len(test_df) == 64*len(labels)
-# assert len(train_cuts) == len(train_dfs)
-# assert train_cuts[0]*len(labels) == len(train_dfs[0])

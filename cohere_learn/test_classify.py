@@ -7,16 +7,6 @@ import pytest
 
 from .classify import CohereFewShotClassify
 
-# class DescribeCohereFewShotClassify:
-# @pytest.fixture
-# def df():
-#     df = pd.DataFrame(
-#         ["this was a great movie", "positive review"],
-#         ["this moview was quite terrible", "negative review"],
-#         columns=["text", "label"],
-#     )
-#     return df
-
 
 @pytest.fixture
 def cohere_client():
@@ -119,28 +109,3 @@ def test_makes_train_dataframes(df, cohere_client):
     assert len(cfc.test_df) == 4
     assert len(cfc.test_df[cfc.test_df["label"] == "a"]) == 2
     assert len(cfc.test_df[cfc.test_df["label"] == "b"]) == 2
-
-    # def it_predicts(self):
-    #     df = pd.DataFrame(
-    #         {
-    #             "text": [
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #                 "this is a test",
-    #             ],
-    #             "label": ["a", "a", "a", "a", "a", "b", "b", "b", "b", "b"],
-    #         }
-    #     )
-    #     train_counts = [2, 2]
-    #     test_count = 2
-    #     labels = ["a", "b"]
-    #     cfc = CohereFewShotClassify(df, train_counts, test_count, "text", "label")
-    #     train_dfs, test_df = cfc.make_train_dataframes(train_counts, test_count, labels)
-    #     assert
