@@ -164,5 +164,5 @@ class FewShotClassify(CohereResponse):
             inputs = self.test_df[self.x_label].tolist()
             examples = self.make_examples(trn_df)
             response = self.cohere_client.classify(inputs=inputs, examples=examples)
-        responses.append(response)
+            responses.append(response)
         return responses
